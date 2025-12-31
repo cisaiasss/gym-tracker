@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#1a1a2e">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Gym Tracker">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <title>Gym Tracker</title>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+        body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#1a1a2e;min-height:100vh;min-height:-webkit-fill-available;color:#fff;padding:15px;padding-top:env(safe-area-inset-top);padding-bottom:80px;overflow-x:hidden}
+        html{height:-webkit-fill-available}
+        .container{max-width:600px;margin:0 auto}
+        h1{text-align:center;margin-bottom:20px;color:#00d9ff;font-size:24px}
+        .tabs{display:flex;position:fixed;bottom:0;left:0;right:0;background:#0d0d1a;padding:10px;padding-bottom:env(safe-area-inset-bottom);justify-content:space-around;z-index:100;border-top:1px solid rgba(255,255,255,0.1)}
+        .tab-btn{padding:10px 15px;background:transparent;border:none;color:#888;cursor:pointer;font-size:12px;display:flex;flex-direction:column;align-items:center;gap:5px}
+        .tab-btn span{font-size:20px}
+        .tab-btn.active{color:#00d9ff}
+        .tab-content{display:none;background:rgba(255,255,255,0.05);border-radius:20px;padding:20px;margin-bottom:20px}
+        .tab-content.active{display:block;animation:fadeIn 0.3s}
+        @keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+        .weight-section{background:linear-gradient(135deg,#ff6b6b,#ee5a5a);padding:20px;border-radius:15px;margin-bottom:20px}
+        .weight-section h3{margin-bottom:15px;font-size:16px}
+        .input-group{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:15px}
+        input[type="date"],input[type="number"]{padding:12px;border-radius:10px;border:none;font-size:16px;background:rgba(255,255,255,0.9);color:#333;min-width:120px}
+        input[type="number"]{width:100px}
+        .btn{padding:12px 20px;border:none;border-radius:10px;cursor:pointer;font-size:14px;font-weight:bold;transition:transform 0.2s}
+        .btn:active{transform:scale(0.95)}
+        .btn-primary{background:#00d9ff;color:#1a1a2e}
+        .btn-success{background:#4ecdc4;color:#1a1a2e}
+        .btn-danger{background:#ff6b6b;color:#fff}
+        .exercise-card{background:rgba(255,255,255,0.08);border-radius:15px;padding:15px;margin-bottom:12px;border-left:4px solid #00d9ff}
+        .exercise-card h4{color:#00d9ff;margin-bottom:12px;font-size:14px;line-height:1.4}
+        .series-row{display:flex;gap:10px;align-items:center;margin-bottom:8px}
+        .series-row label{min-width:55px;color:#aaa;font-size:13px}
+        .series-row input{width:80px;padding:10px;font-size:14px}
+        .day-selector{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:20px}
+        .day-card{background:rgba(255,255,255,0.08);padding:15px;border-radius:15px;cursor:pointer;text-align:center;border:2px solid transparent;transition:all 0.2s}
+        .day-card:active{transform:scale(0.98)}
+        .day-card.selected{border-color:#00d9ff;background:rgba(0,217,255,0.15)}
+        .day-card h4{color:#00d9ff;margin-bottom:3px;font-size:14px}
+        .day-card p{color:#888;font-size:11px}
+        .day-card.rest{grid-column:span 2}
+        .history-item{background:rgba(255,255,255,0.05);padding:12px;border-radius:10px;margin-bottom:10px}
+        .history-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+        .history-date{color:#00d9ff;font-weight:bold;font-size:13px}
+        .history-day{color:#4ecdc4;font-size:12px}
+        .history-weight{font-size:22px;color:#4ecdc4}
+        .section-title{color:#00d9ff;margin:15px 0;padding-bottom:10px;border-bottom:1px solid rgba(255,255,255,0.1);font-size:16px}
+        .no-data{text-align:center;color:#666;padding:30px}
+        .delete-btn{background:none;border:none;color:#ff6b6b;cursor:pointer;font-size:18px;padding:5px}
+        .muscle-tag{display:inline-block;background:rgba(0,217,255,0.2);color:#00d9ff;padding:2px 8px;border-radius:20px;font-size:10px;margin-left:5px}
+        .rest-day{text-align:center;padding:40px 20px;color:#4ecdc4}
+        .rest-day h2{font-size:20px;margin-bottom:10px}
+        .stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:15px;margin-bottom:20px}
+        .stat-card{background:rgba(255,255,255,0.1);padding:20px;border-radius:15px;text-align:center}
+        .stat-value{font-size:28px;font-weight:bold;color:#00d9ff}
+        .stat-label{color:#888;margin-top:5px;font-size:12px}
+        .exercise-history-item{background:rgba(255,255,255,0.03);padding:8px 10px;border-radius:8px;margin:5px 0;font-size:12px;line-height:1.5}
+        .export-section{display:flex;flex-direction:column;gap:10px;margin-top:20px}
+        .export-section .btn{width:100%}
+        .install-banner{background:linear-gradient(135deg,#4ecdc4,#44a3aa);padding:15px;border-radius:15px;margin-bottom:20px;text-align:center;display:none}
+        .install-banner.show{display:block}
+        .install-banner p{margin-bottom:10px;font-size:14px}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>💪 Gym Tracker</h1>
+        
+        <div id="installBanner" class="install-banner">
+            <p>📲 Instala la app en tu móvil</p>
+            <button class="btn btn-primary" onclick="installApp()">Instalar App</button>
+        </div>
+
+        <div id="registro" class="tab-content active">
+            <div class="input-group"><label style="color:#aaa">📅</label><input type="date" id="workoutDate"></div>
+            <h3 class="section-title">Selecciona el día:</h3>
+            <div class="day-selector">
+                <div class="day-card" onclick="selectDay(1)" id="day1"><h4>DÍA 1</h4><p>TORSO A</p></div>
+                <div class="day-card" onclick="selectDay(2)" id="day2"><h4>DÍA 2</h4><p>PIERNA A</p></div>
+                <div class="day-card" onclick="selectDay(4)" id="day4"><h4>DÍA 4</h4><p>TORSO B</p></div>
+                <div class="day-card" onclick="selectDay(5)" id="day5"><h4>DÍA 5</h4><p>PIERNA B</p></div>
+                <div class="day-card rest" onclick="selectDay(3)" id="day3"><h4>DÍA 3 - DESCANSO</h4><p>Recuperación activa</p></div>
+            </div>
+            <div id="exerciseContainer"></div>
+            <button class="btn btn-success" onclick="saveWorkout()" id="saveBtn" style="display:none;width:100%;margin-top:15px;padding:15px">💾 Guardar Entrenamiento</button>
+        </div>
+
+        <div id="peso" class="tab-content">
+            <div class="weight-section">
+                <h3>⚖️ Registrar Peso</h3>
+                <div class="input-group">
+                    <input type="date" id="weightDate">
+                    <input type="number" id="bodyWeight" placeholder="kg" step="0.1">
+                    <button class="btn btn-primary" onclick="saveWeight()">Guardar</button>
+                </div>
+            </div>
+            <h3 class="section-title">Historial</h3>
+            <div id="weightHistory"></div>
+        </div>
+
+        <div id="historial" class="tab-content">
+            <h3 class="section-title">Entrenamientos</h3>
+            <div id="workoutHistory"></div>
+        </div>
+
+        <div id="stats" class="tab-content">
+            <div class="stats-grid">
+                <div class="stat-card"><div class="stat-value" id="totalWorkouts">0</div><div class="stat-label">Entrenos</div></div>
+                <div class="stat-card"><div class="stat-value" id="currentWeight">--</div><div class="stat-label">Peso Actual</div></div>
+                <div class="stat-card"><div class="stat-value" id="weightChange">--</div><div class="stat-label">Cambio</div></div>
+                <div class="stat-card"><div class="stat-value" id="thisWeek">0</div><div class="stat-label">Esta Semana</div></div>
+            </div>
+            <div class="export-section">
+                <button class="btn btn-primary" onclick="exportData()">📤 Exportar Backup</button>
+                <button class="btn btn-success" onclick="document.getElementById('importFile').click()">📥 Importar Backup</button>
+                <input type="file" id="importFile" accept=".json" onchange="importData(event)" style="display:none">
+                <button class="btn btn-danger" onclick="clearAll()">🗑️ Borrar Todo</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="tabs">
+        <button class="tab-btn active" onclick="showTab('registro',this)"><span>🏋️</span>Entreno</button>
+        <button class="tab-btn" onclick="showTab('peso',this)"><span>⚖️</span>Peso</button>
+        <button class="tab-btn" onclick="showTab('historial',this)"><span>📋</span>Historial</button>
+        <button class="tab-btn" onclick="showTab('stats',this)"><span>📊</span>Stats</button>
+    </div>
+
+<script>
+const routine={1:{name:"TORSO A",exercises:[{name:"Press Inclinado (Mancuernas/Multipower)",series:2,muscle:"Pecho"},{name:"Press Plano (Máquina/Mancuernas)",series:2,muscle:"Pecho"},{name:"Remo con soporte pecho",series:2,muscle:"Espalda"},{name:"Elevaciones Laterales",series:3,muscle:"Hombro"},{name:"Jalón al pecho",series:2,muscle:"Espalda"},{name:"Extensión Tríceps",series:2,muscle:"Tríceps"},{name:"Curl Bíceps",series:2,muscle:"Bíceps"}]},2:{name:"PIERNA A",exercises:[{name:"Sentadilla (Hack/Pendulum)",series:2,muscle:"Cuádriceps"},{name:"Prensa / Zancadas",series:2,muscle:"Cuádriceps"},{name:"Extensión Cuádriceps",series:2,muscle:"Cuádriceps"},{name:"Curl Femoral Sentado",series:2,muscle:"Isquios"},{name:"Aductores",series:2,muscle:"Aductores"},{name:"Gemelos de pie",series:2,muscle:"Gemelos"},{name:"Crunch Abdominal",series:2,muscle:"Abdomen"}]},3:{name:"DESCANSO",exercises:[]},4:{name:"TORSO B",exercises:[{name:"Jalón Unilateral",series:2,muscle:"Espalda"},{name:"Remo Horizontal",series:2,muscle:"Espalda"},{name:"Press Inclinado",series:2,muscle:"Pecho"},{name:"Elevaciones Laterales",series:3,muscle:"Hombro"},{name:"Pájaros / Facepull",series:2,muscle:"Delt Post"},{name:"Fondos / Press JM",series:2,muscle:"Tríceps"},{name:"Curl Martillo",series:2,muscle:"Bíceps"}]},5:{name:"PIERNA B",exercises:[{name:"RDL (Peso Muerto Rumano)",series:2,muscle:"Isquios"},{name:"Curl Femoral Tumbado",series:2,muscle:"Isquios"},{name:"Prensa pies altos",series:2,muscle:"Glúteo"},{name:"Extensión Cuádriceps",series:2,muscle:"Cuádriceps"},{name:"Gemelos Sentado",series:2,muscle:"Gemelos"},{name:"Elevación piernas",series:2,muscle:"Abdomen"}]}};
+let selectedDay=null;
+let deferredPrompt;
+
+window.addEventListener('beforeinstallprompt',(e)=>{e.preventDefault();deferredPrompt=e;document.getElementById('installBanner').classList.add('show')});
+
+function installApp(){if(deferredPrompt){deferredPrompt.prompt();deferredPrompt.userChoice.then(()=>{deferredPrompt=null;document.getElementById('installBanner').classList.remove('show')})}}
+
+document.addEventListener('DOMContentLoaded',()=>{const t=new Date().toISOString().split('T')[0];document.getElementById('workoutDate').value=t;document.getElementById('weightDate').value=t;loadWeightHistory();loadWorkoutHistory();loadStats();if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js')}});
+
+function showTab(id,btn){document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));document.getElementById(id).classList.add('active');btn.classList.add('active');if(id==='peso')loadWeightHistory();if(id==='historial')loadWorkoutHistory();if(id==='stats')loadStats()}
+
+function selectDay(d){selectedDay=d;document.querySelectorAll('.day-card').forEach(c=>c.classList.remove('selected'));document.getElementById('day'+d).classList.add('selected');renderExercises(d)}
+
+function renderExercises(d){const c=document.getElementById('exerciseContainer');const data=routine[d];if(d===3){c.innerHTML='<div class="rest-day"><h2>🧘 Descanso Activo</h2><p>Recuperación, estiramientos, cardio ligero</p></div>';document.getElementById('saveBtn').style.display='none';return}let h='<h3 class="section-title">'+data.name+'</h3>';data.exercises.forEach((e,i)=>{h+='<div class="exercise-card"><h4>'+e.name+'<span class="muscle-tag">'+e.muscle+'</span></h4>';for(let s=1;s<=e.series;s++){h+='<div class="series-row"><label>Serie '+s+'</label><input type="number" placeholder="kg" step="0.5" id="w_'+i+'_'+s+'" inputmode="decimal"><input type="number" placeholder="reps" id="r_'+i+'_'+s+'" inputmode="numeric"></div>'}h+='</div>'});c.innerHTML=h;document.getElementById('saveBtn').style.display='block'}
+
+function saveWorkout(){if(!selectedDay||selectedDay===3)return;const date=document.getElementById('workoutDate').value;const data=routine[selectedDay];const workout={date,day:selectedDay,dayName:data.name,exercises:[]};data.exercises.forEach((e,i)=>{const ex={name:e.name,muscle:e.muscle,sets:[]};for(let s=1;s<=e.series;s++){const w=document.getElementById('w_'+i+'_'+s).value;const r=document.getElementById('r_'+i+'_'+s).value;if(w||r)ex.sets.push({set:s,weight:parseFloat(w)||0,reps:parseInt(r)||0})}if(ex.sets.length>0)workout.exercises.push(ex)});if(workout.exercises.length===0){alert('Rellena al menos un ejercicio');return}let workouts=JSON.parse(localStorage.getItem('workouts')||'[]');workouts.push(workout);localStorage.setItem('workouts',JSON.stringify(workouts));alert('✅ Guardado!');selectedDay=null;document.querySelectorAll('.day-card').forEach(c=>c.classList.remove('selected'));document.getElementById('exerciseContainer').innerHTML='';document.getElementById('saveBtn').style.display='none'}
+
+function saveWeight(){const date=document.getElementById('weightDate').value;const weight=parseFloat(document.getElementById('bodyWeight').value);if(!date||!weight){alert('Ingresa fecha y peso');return}let weights=JSON.parse(localStorage.getItem('bodyWeights')||'[]');const idx=weights.findIndex(w=>w.date===date);if(idx>=0)weights[idx].weight=weight;else weights.push({date,weight});weights.sort((a,b)=>new Date(a.date)-new Date(b.date));localStorage.setItem('bodyWeights',JSON.stringify(weights));document.getElementById('bodyWeight').value='';loadWeightHistory();alert('✅ Guardado!')}
+
+function loadWeightHistory(){const weights=JSON.parse(localStorage.getItem('bodyWeights')||'[]');const c=document.getElementById('weightHistory');if(weights.length===0){c.innerHTML='<div class="no-data">No hay registros</div>';return}let h='';weights.slice().reverse().slice(0,20).forEach(w=>{h+='<div class="history-item"><div class="history-header"><span class="history-date">'+new Date(w.date).toLocaleDateString('es',{day:'numeric',month:'short'})+'</span><button class="delete-btn" onclick="deleteWeight(\''+w.date+'\')">×</button></div><div class="history-weight">'+w.weight+' kg</div></div>'});c.innerHTML=h}
+
+function deleteWeight(date){if(!confirm('¿Eliminar?'))return;let weights=JSON.parse(localStorage.getItem('bodyWeights')||'[]');weights=weights.filter(w=>w.date!==date);localStorage.setItem('bodyWeights',JSON.stringify(weights));loadWeightHistory()}
+
+function loadWorkoutHistory(){let workouts=JSON.parse(localStorage.getItem('workouts')||'[]');const c=document.getElementById('workoutHistory');if(workouts.length===0){c.innerHTML='<div class="no-data">No hay entrenamientos</div>';return}let h='';workouts.slice().reverse().slice(0,15).forEach((w,idx)=>{h+='<div class="history-item"><div class="history-header"><span class="history-date">'+new Date(w.date).toLocaleDateString('es',{weekday:'short',day:'numeric',month:'short'})+'</span><span class="history-day">'+w.dayName+'</span><button class="delete-btn" onclick="deleteWorkout('+(workouts.length-1-idx)+')">×</button></div>';w.exercises.forEach(e=>{h+='<div class="exercise-history-item"><strong>'+e.name+':</strong> '+e.sets.map(s=>s.weight+'kg×'+s.reps).join(' | ')+'</div>'});h+='</div>'});c.innerHTML=h}
+
+function deleteWorkout(idx){if(!confirm('¿Eliminar?'))return;let workouts=JSON.parse(localStorage.getItem('workouts')||'[]');workouts.splice(idx,1);localStorage.setItem('workouts',JSON.stringify(workouts));loadWorkoutHistory();loadStats()}
+
+function loadStats(){const workouts=JSON.parse(localStorage.getItem('workouts')||'[]');const weights=JSON.parse(localStorage.getItem('bodyWeights')||'[]');document.getElementById('totalWorkouts').textContent=workouts.length;const today=new Date();const weekAgo=new Date(today.getTime()-7*24*60*60*1000);const thisWeek=workouts.filter(w=>new Date(w.date)>=weekAgo).length;document.getElementById('thisWeek').textContent=thisWeek;if(weights.length>0){const current=weights[weights.length-1].weight;const first=weights[0].weight;const change=(current-first).toFixed(1);document.getElementById('currentWeight').textContent=current+'kg';document.getElementById('weightChange').textContent=(change>0?'+':'')+change+'kg'}}
+
+function exportData(){const data={workouts:JSON.parse(localStorage.getItem('workouts')||'[]'),bodyWeights:JSON.parse(localStorage.getItem('bodyWeights')||'[]')};const blob=new Blob([JSON.stringify(data)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='gym-backup.json';a.click()}
+
+function importData(e){const file=e.target.files[0];if(!file)return;const reader=new FileReader();reader.onload=function(ev){try{const data=JSON.parse(ev.target.result);if(data.workouts)localStorage.setItem('workouts',JSON.stringify(data.workouts));if(data.bodyWeights)localStorage.setItem('bodyWeights',JSON.stringify(data.bodyWeights));alert('✅ Importado!');location.reload()}catch(err){alert('Error')}};reader.readAsText(file)}
+
+function clearAll(){if(!confirm('¿Borrar TODO?'))return;localStorage.clear();location.reload()}
+</script>
+</body>
+</html>
